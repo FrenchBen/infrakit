@@ -1,0 +1,28 @@
+{
+  "ID": "k8s-worker",
+  "Properties": {
+    "Allocation": {
+      "LogicalIDs": ["172.17.4.201"]
+    },
+    "Instance": {
+      "Plugin": "instance-vagrant",
+      "Properties": {
+        "Box": "coreos-alpha",
+        "BoxVersion": ">= 1151.0.0",
+        "BoxURL": "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json",
+        "File": {
+          "Src": "./config/worker-install.sh",
+          "Dst": "/tmp/vagrantfile-user-data"
+        }
+      }
+    },
+    "Flavor": {
+      "Plugin": "flavor-kubernetes",
+      "Properties": {
+        "Init": [
+          "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "ID": "k8s-controller",
+  "Properties": {
+    "Allocation": {
+      "LogicalIDs": ["172.17.4.101", "10.3.0.1"]
+    },
+    "Instance": {
+      "Plugin": "instance-vagrant",
+      "Properties": {
+        "Box": "coreos-alpha",
+        "BoxVersion": ">= 1151.0.0",
+        "BoxURL": "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json",
+        "File": {
+          "Src": "./config/controller-install.sh",
+          "Dst": "/tmp/vagrantfile-user-data"
+        }
+      }
+    },
+    "Flavor": {
+      "Plugin": "flavor-kubernetes",
+      "Properties": {
+        "Init": [
+          "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/"
+        ]
+      }
+    }
+  }
+}

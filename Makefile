@@ -84,6 +84,7 @@ endif
 	$(call build_binary,infrakit,github.com/docker/infrakit/cmd/cli)
 	$(call build_binary,infrakit-group-default,github.com/docker/infrakit/cmd/group)
 	$(call build_binary,infrakit-flavor-combo,github.com/docker/infrakit/example/flavor/combo)
+	$(call build_binary,infrakit-flavor-kubernetes,github.com/docker/infrakit/example/flavor/kubernetes)
 	$(call build_binary,infrakit-flavor-swarm,github.com/docker/infrakit/example/flavor/swarm)
 	$(call build_binary,infrakit-flavor-vanilla,github.com/docker/infrakit/example/flavor/vanilla)
 	$(call build_binary,infrakit-flavor-zookeeper,github.com/docker/infrakit/example/flavor/zookeeper)

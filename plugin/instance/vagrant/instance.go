@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 	"text/template"
 
 	"github.com/docker/infrakit/spi/instance"
@@ -38,6 +37,12 @@ type vagrantPlugin struct {
 	VagrantTmpl     *template.Template
 }
 
+type schema struct {
+	CPUs   int
+	Memory int
+	Box    string
+}
+
 // Validate performs local validation on a provision request.
 func (v vagrantPlugin) Validate(req json.RawMessage) error {
 	return nil
@@ -55,25 +60,23 @@ func inheritedEnvCommand(cmdAndArgs []string, extraEnv ...string) (string, error
 // Provision creates a new instance.
 func (v vagrantPlugin) Provision(spec instance.Spec) (*instance.ID, error) {
 
-	properties := map[string]string{}
+	var parser interface{}
 
 	if spec.Properties != nil {
-		dec := json.NewDecoder(strings.NewReader(string(*spec.Properties)))
-		if err := dec.Decode(&properties); err != nil {
+		if err := json.Unmarshal(*spec.Properties, &parser); err != nil {
 			return nil, fmt.Errorf("Invalid instance properties: %s", err)
 		}
 	}
+	properties := parser.(map[string]interface{})
 
-	if properties["CPUs"] == "" {
-		properties["CPUs"] = "2"
-	}
-
-	if properties["Memory"] == "" {
-		properties["Memory"] = "512"
-	}
-
-	if properties["Box"] == "" {
+	if properties["Box"] == nil {
 		return nil, errors.New("Property 'Box' must be set")
+	}
+	if properties["CPUs"] == nil {
+		properties["CPUs"] = 2
+	}
+	if properties["Memory"] == nil {
+		properties["Memory"] = 512
 	}
 
 	networkOptions := `, type: "dhcp"`

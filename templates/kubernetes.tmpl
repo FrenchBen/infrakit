@@ -1,0 +1,24 @@
+{{if .Properties.File.Src }}
+FILE_PATH = File.expand_path("{{ .Properties.File.Src }}")
+puts FILE_PATH
+{{end}}
+Vagrant.configure("2") do |config|
+  config.vm.box = "{{.Properties.Box}}"
+  {{if .Properties.BoxVersion }}
+  config.vm.box_version = "{{.Properties.BoxVersion}}"
+  {{end}}
+  {{if .Properties.BoxURL }}
+  config.vm.box_url = "{{.Properties.BoxURL}}"
+  {{end}}
+  config.vm.hostname = "infrakit.box"
+  config.vm.network "private_network"{{.NetworkOptions}}
+  {{if .Properties.File }}
+  config.vm.provision :file, :source => FILE_PATH, :destination => "{{ .Properties.File.Dst }}"
+  {{end}}
+  config.vm.provision :shell, path: "boot.sh"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.memory = {{.Properties.Memory}}
+    vb.cpus = {{.Properties.CPUs}}
+  end
+end
