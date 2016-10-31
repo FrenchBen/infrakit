@@ -37,12 +37,6 @@ type vagrantPlugin struct {
 	VagrantTmpl     *template.Template
 }
 
-type schema struct {
-	CPUs   int
-	Memory int
-	Box    string
-}
-
 // Validate performs local validation on a provision request.
 func (v vagrantPlugin) Validate(req json.RawMessage) error {
 	return nil
