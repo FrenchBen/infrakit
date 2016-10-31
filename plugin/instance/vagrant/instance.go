@@ -54,14 +54,13 @@ func inheritedEnvCommand(cmdAndArgs []string, extraEnv ...string) (string, error
 // Provision creates a new instance.
 func (v vagrantPlugin) Provision(spec instance.Spec) (*instance.ID, error) {
 
-	var parser interface{}
+	var properties map[string]interface{}
 
 	if spec.Properties != nil {
-		if err := json.Unmarshal(*spec.Properties, &parser); err != nil {
+		if err := json.Unmarshal(*spec.Properties, &properties); err != nil {
 			return nil, fmt.Errorf("Invalid instance properties: %s", err)
 		}
 	}
-	properties := parser.(map[string]interface{})
 
 	if properties["Box"] == nil {
 		return nil, errors.New("Property 'Box' must be set")
