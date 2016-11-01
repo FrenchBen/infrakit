@@ -95,7 +95,8 @@ func (k kubernetesFlavor) Prepare(
 	}
 	properties["SSL"] = sslTar
 	data, err := json.Marshal(properties)
-	instance.Properties = data
+	raw := json.RawMessage(string(data))
+	instance.Properties = &raw
 
 	// Append tags
 	for k, v := range s.Tags {
@@ -120,29 +121,25 @@ func provisionMachineSSL(k kubernetesFlavor, certBaseName string, cn string, ipA
 }
 
 func execScript(script string, args ...string) error {
-	data, err := Asset("ssl/init-ssl")
+	data, err := Asset(script)
 	if err != nil {
 		// Asset was not found.
 		log.Errorf("Script error: %v", err)
 		return err
 	}
-	cmd := exec.Command("bash", "-s", strings.Join(args, ", "))
+	args = append([]string{"-s"}, args...)
+	cmd := exec.Command("bash", args...)
 	cmd.Stdin = strings.NewReader(string(data))
-	var out bytes.Buffer
+	var out, outErr bytes.Buffer
 	cmd.Stdout = &out
+	cmd.Stderr = &outErr
+	log.Infof("Args: %v", cmd.Args)
 	err = cmd.Run()
+	log.Debugf("Output: %q\n", out.String())
 	if err != nil {
 		log.Errorf("Error in bash script: %v", err)
+		log.Errorf("Stderr: %v", outErr.String())
 		return err
 	}
-	fmt.Printf("Output: %q\n", out.String())
 	return nil
 }
-
-// def provisionMachineSSL(machine,certBaseName,cn,ipAddrs)
-//   tarFile = "ssl/#{cn}.tar"
-//   ipString = ipAddrs.map.with_index { |ip, i| "IP.#{i+1}=#{ip}"}.join(",")
-//   system("./../../lib/init-ssl ssl #{certBaseName} #{cn} #{ipString}") or abort("failed generating #{cn} SSL artifacts")
-//   machine.vm.provision :file, :source => tarFile, :destination => "/tmp/ssl.tar"
-//   machine.vm.provision :shell, :inline => "mkdir -p /etc/kubernetes/ssl && tar -C /etc/kubernetes/ssl -xf /tmp/ssl.tar", :privileged => true
-// end
