@@ -1,6 +1,8 @@
 {{if .Properties.File.Src }}
 FILE_PATH = File.expand_path("{{ .Properties.File.Src }}")
-puts FILE_PATH
+{{end}}
+{{if .Properties.SSL }}
+SSL_PATH = File.expand_path("{{ .Properties.SSL }}")
 {{end}}
 Vagrant.configure("2") do |config|
   config.vm.box = "{{.Properties.Box}}"
@@ -12,6 +14,13 @@ Vagrant.configure("2") do |config|
   {{end}}
   config.vm.hostname = "infrakit.box"
   config.vm.network "private_network"{{.NetworkOptions}}
+
+  {{if .Properties.SSL }}
+  config.vm.provision :file, :source => SSL_PATH, :destination => "/tmp/ssl.tar"
+  config.vm.provision :shell, :inline => "mkdir -p /etc/kubernetes/ssl && tar -C /etc/kubernetes/ssl -xf /tmp/ssl.tar", :privileged => true
+  {{end}}
+
+
   {{if .Properties.File }}
   config.vm.provision :file, :source => FILE_PATH, :destination => "{{ .Properties.File.Dst }}"
   {{end}}

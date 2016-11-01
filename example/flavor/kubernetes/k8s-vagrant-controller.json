@@ -2,7 +2,7 @@
   "ID": "k8s-controller",
   "Properties": {
     "Allocation": {
-      "LogicalIDs": ["172.17.4.101", "10.3.0.1"]
+      "LogicalIDs": ["172.17.4.101"]
     },
     "Instance": {
       "Plugin": "instance-vagrant",
@@ -13,7 +13,7 @@
         "File": {
           "Src": "./example/flavor/kubernetes/config/controller-install.sh",
           "Dst": "/tmp/vagrantfile-user-data"
-        }
+       }
       }
     },
     "Flavor": {
