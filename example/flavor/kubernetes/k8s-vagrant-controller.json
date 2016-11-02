@@ -22,7 +22,8 @@
       "Properties": {
         "Init": [
           "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/"
-        ]
+        ],
+        "Role": "controller"
       }
     }
   }

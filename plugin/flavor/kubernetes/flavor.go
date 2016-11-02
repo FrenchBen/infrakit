@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 type Spec struct {
 	// Init
 	Init []string
+	Role string
 
 	// Tags
 	Tags map[string]string
@@ -68,25 +70,30 @@ func (k kubernetesFlavor) Prepare(
 	lines = append(lines, s.Init...)
 
 	instance.Init = strings.Join(lines, "\n")
-
-	//@TODO
-	// Generate SSL for Cluster
-	// Generate root CA
-	// system("mkdir -p ssl && ./../../lib/init-ssl-ca ssl") or abort ("failed generating SSL artifacts")
-	if err := execScript("ssl/init-ssl-ca", k.SslDir); err != nil {
+	if _, err := os.Stat(k.SslDir + "/kube-admin.tar"); os.IsNotExist(err) {
+		log.Errorf("SSL Directory does not exist: %v", k.SslDir)
 		return instance, err
 	}
 
-	// Generate creds with admin/kube-admin
-	// Generate admin key/cert
-	// system("./../../lib/init-ssl ssl admin kube-admin") or abort("failed generating admin SSL artifacts")
-	if err := execScript("ssl/init-ssl", k.SslDir, "admin", "kube-admin"); err != nil {
-		return instance, err
+	// Only create the admin SSL if not exist:
+	if _, err := os.Stat(k.SslDir + "/kube-admin.tar"); os.IsNotExist(err) {
+		// Generate root CA
+		if err := execScript("ssl/init-ssl-ca", k.SslDir); err != nil {
+			return instance, err
+		}
+		// Generate admin key/cert
+		if err := execScript("ssl/init-ssl", k.SslDir, "admin", "kube-admin"); err != nil {
+			return instance, err
+		}
 	}
 
 	// Generate kubeconfig file in tutorial folder
 	logicalID := string(*instance.LogicalID)
-	sslTar, err := provisionMachineSSL(k, "apiserver", "kube-apiserver-"+logicalID, []string{logicalID, "10.3.0.1"})
+	ipAddrs := []string{logicalID}
+	if s.Role == "controller" {
+		ipAddrs = append(ipAddrs, "10.3.0.1")
+	}
+	sslTar, err := provisionMachineSSL(k, "apiserver", "kube-apiserver-"+logicalID, ipAddrs)
 
 	var properties map[string]interface{}
 
@@ -109,7 +116,7 @@ func (k kubernetesFlavor) Prepare(
 }
 
 func provisionMachineSSL(k kubernetesFlavor, certBaseName string, cn string, ipAddrs []string) (string, error) {
-	tarFile := fmt.Sprintf("ssl/%s.tar", cn)
+	tarFile := fmt.Sprintf("%s/%s.tar", k.SslDir, cn)
 	ipString := ""
 	for i, ip := range ipAddrs {
 		ipString = ipString + fmt.Sprintf("IP.%d=%s,", i+1, ip)
@@ -134,7 +141,7 @@ func execScript(script string, args ...string) error {
 	cmd.Stdout = &out
 	cmd.Stderr = &outErr
 	err = cmd.Run()
-	log.Infof("Output: %q\n", out.String())
+	log.Debugf("Output: %q\n", out.String())
 	if err != nil {
 		log.Errorf("Error in bash script: %v", err)
 		log.Errorf("Stderr: %v", outErr.String())
