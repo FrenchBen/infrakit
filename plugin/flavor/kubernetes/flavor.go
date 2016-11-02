@@ -133,9 +133,8 @@ func execScript(script string, args ...string) error {
 	var out, outErr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &outErr
-	log.Infof("Args: %v", cmd.Args)
 	err = cmd.Run()
-	log.Debugf("Output: %q\n", out.String())
+	log.Infof("Output: %q\n", out.String())
 	if err != nil {
 		log.Errorf("Error in bash script: %v", err)
 		log.Errorf("Stderr: %v", outErr.String())

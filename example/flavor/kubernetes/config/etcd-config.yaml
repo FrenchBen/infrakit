@@ -12,7 +12,7 @@ coreos:
 
   etcd2:
     name: k8s-etcd
-    initial-cluster: e1=http://172.17.4.51:2380
+    initial-cluster: k8s-etcd=http://172.17.4.51:2380
     advertise-client-urls: http://$private_ipv4:2379
     listen-client-urls: http://0.0.0.0:2379
     initial-advertise-peer-urls: http://$private_ipv4:2380
