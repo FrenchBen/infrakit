@@ -23,7 +23,7 @@ const (
 	EnvHostsFile = "INFRAKIT_HOSTS_FILE"
 )
 
-// HostsFile returns the hsots file used for looking up hosts
+// HostsFile returns the hosts file used for looking up hosts
 func HostsFile() string {
 	return local.Getenv(EnvHostsFile, filepath.Join(local.InfrakitHome(), "hosts"))
 }
